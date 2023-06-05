@@ -13,6 +13,7 @@ app.use(express.json())
 
 // middlewares
 app.use(cors()) // Cross origin Resource Sharing to allow incoming requests
+app.use(cookieParser(process.env.SECRET_TOKEN)) // configure secured cookies
 
 // index route
 app.use(`/api/auth`, require('./route/authRoute'))
