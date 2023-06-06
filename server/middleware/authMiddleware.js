@@ -7,7 +7,7 @@ const authMiddleware = async (req,res, next) => {
 
             jwt.verify(token, process.env.SECRET_TOKEN, (err,user) => {
                 if(err)
-                    return res.status(404).json({ msg: `Un Authorized Token`})
+                    return res.status(404).json({ msg: `Token not found`})
 
                 // res.json({ user })
                 req.user = user // assinging to request variable
