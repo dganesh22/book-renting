@@ -1,6 +1,7 @@
-import React from 'react'
+import React, { useContext } from 'react'
 import { BrowserRouter, Route, NavLink, Routes } from 'react-router-dom'
 import { ToastContainer } from 'react-toastify'
+import { GlobalContext } from './GlobalContext'
 
 import Menu from './components/Util/Menu'
 import Home from './components/Default/Home'
@@ -10,8 +11,14 @@ import Register from './components/Auth/Register'
 import UserDashboard from './components/User/UserDashboard'
 import AdminDashboard from './components/Admin/AdminDashboard'
 import Pnf from './components/Util/Pnf'
+import ProtectedRoute from './AuthGaurd/ProtectedRoute'
 
 function App() {
+  const context = useContext(GlobalContext)
+  const [isLogged] = context.auth.isLogged
+  const [isUser] =  context.auth.isUser
+  const [isAdmin] = context.auth.isAdmin
+
   return (
     <BrowserRouter>
           <Menu/>
@@ -21,8 +28,21 @@ function App() {
               <Route path={`/contact`} element={<Contact/>} />
               <Route path={`/login`} element={<Login/>} />
               <Route path={`/register`} element={<Register/>} />
-              <Route path={`/user/dashboard`} element={<UserDashboard/>} />
-              <Route path={`/admin/dashboard`} element={<AdminDashboard/>} />
+                {
+                    isLogged && isUser ? (
+                        <Route element={<ProtectedRoute/>}>
+                               <Route path={`/user/dashboard`} element={<UserDashboard/>} />
+                        </Route>
+                    ): null 
+                }
+                {
+                    isLogged && isAdmin ? (
+                        <Route element={<ProtectedRoute/>}>
+                              <Route path={`/admin/dashboard`} element={<AdminDashboard/>} />
+                        </Route>
+                    ): null 
+                }
+              
               <Route path={`/*`} element={<Pnf/>} />
           </Routes>
     </BrowserRouter>
