@@ -38,7 +38,7 @@ function useAuthApi(props) {
                 }
         }
 
-        if(loginStatus) {
+        if(loginStatus == true) {
             readAuthToken()
         }
     },[])
@@ -46,8 +46,7 @@ function useAuthApi(props) {
   
 
     useEffect(() => {
-
-        if(loginStatus) {
+        if(loginStatus == true) {
             getToken()
         }
     },[])
