@@ -64,7 +64,7 @@ function Books() {
                     <tbody>
                         {
                             books && books.map((item,index) => {
-                                const { title, image, author, pages, price } = item
+                                const { _id, title, image, author, pages, price } = item
                                 return (
                                     <tr className='text-center' key={index}>
                                         <td> {title} </td>
@@ -75,9 +75,9 @@ function Books() {
                                         <td> {pages} </td>
                                         <td> &#8377; {price} </td>
                                         <td>
-                                            <NavLink className="btn btn-link">Details</NavLink>
-                                            <NavLink className="btn btn-link">Edit</NavLink>
-                                            <NavLink className="btn btn-link">Delete</NavLink>
+                                            <NavLink to={`/admin/book/details/${_id}`} className="btn btn-link">Details</NavLink>
+                                            <NavLink to={`/admin/book/edit/${_id}`} className="btn btn-link">Edit</NavLink>
+                                            <button className="btn btn-link">Delete</button>
                                         </td>
                                     </tr>
                                 )
