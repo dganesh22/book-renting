@@ -2,6 +2,7 @@ import React, { useState, useEffect, useContext } from 'react'
 import axios from 'axios'
 import { GlobalContext } from '../../../GlobalContext'
 import { NavLink } from 'react-router-dom'
+import { toast } from 'react-toastify'
 
 function Books() {
     const context = useContext(GlobalContext)
@@ -21,6 +22,20 @@ function Books() {
     useEffect(() => {
         readBooks()
     }, [])
+
+    // delete book
+    const deleteHandler = async (id) => {
+        if(window.confirm(`Are you sure to delete a book info?`)) {
+            await axios.delete(`/api/book/delete/${id}`, {
+                headers: {
+                    Authorization: token
+                }
+            }).then(res => {
+                    toast.success(res.data.msg)
+                    window.location.reload()
+            }).catch(err => toast.error(err.response.data.msg))
+        }
+    }
 
 
   if(books.length === 0) {
@@ -77,7 +92,7 @@ function Books() {
                                         <td>
                                             <NavLink to={`/admin/book/details/${_id}`} className="btn btn-link">Details</NavLink>
                                             <NavLink to={`/admin/book/edit/${_id}`} className="btn btn-link">Edit</NavLink>
-                                            <button className="btn btn-link">Delete</button>
+                                            <button onClick={() =>deleteHandler(_id)} className="btn btn-link">Delete</button>
                                         </td>
                                     </tr>
                                 )
