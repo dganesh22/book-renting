@@ -1,4 +1,6 @@
 const Rent = require('../model/rentModel')
+const User = require('../model/userModel')
+const Book = require('../model/bookModel')
 
 const rentController = {
     getAll: async (req,res) => {
@@ -27,7 +29,23 @@ const rentController = {
                 if(extRent)
                     return res.status(400).json({ msg: `Already you have rented a book..`})
 
-            const data =  await Rent.create(req.body)
+                // read book info
+                    const book = await Book.findById({ _id: req.body.bookId })
+                         if(!book) 
+                            return res.status(404).json({ msg: `Book details not found`})
+                // read user info
+                    const user = await User.findById({ _id: req.body.userId })
+                        if(!user)
+                            return res.status(404).json({ msg: `User details not found`})
+
+                    let newRent = {
+                            ...req.body,
+                            book,
+                            user
+                    }
+
+            const data =  await Rent.create(newRent)
+            
                 return res.status(200).json({ msg: `Rent details added successfully`, rent: data })
         } catch (err) {
             return res.status(500).json({ msg: err.message })
@@ -43,7 +61,8 @@ const rentController = {
 
                 if(extRent.bookId === req.body.bookId && extRent.userId === req.body.userId)
                     return res.status(400).json({ msg: `Already you have rented a book..`})
-                
+
+               
                 await Rent.findByIdAndUpdate({ _id: id }, {
                     amount: req.body.amount,
                     returnDate: req.body.returnDate,
