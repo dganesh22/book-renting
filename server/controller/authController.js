@@ -109,6 +109,17 @@ const authController = {
         } catch (err) {
             return res.status(500).json({ msg: err.message })
         }
+    },
+    allUsers: async (req,res) => {
+        try {
+            const data = await User.find()
+
+            const users = data.filter(item => item.role !== "superadmin")
+            
+            return res.status(200).json({ length: users.length, users })
+        } catch (err) {
+            return res.status(500).json({ msg: err.message })
+        }
     }
 }
 

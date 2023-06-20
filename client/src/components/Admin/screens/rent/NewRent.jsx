@@ -20,16 +20,21 @@ const diffDays  = (d1,d2) => {
 
 function NewRent() {
     const [rent,setRent] = useState({
+        userId: '',
         bookId: '',
-        amount: 0,
         returnDate: '',
         paymentStatus: ''
     })
+    const [amount,setAmount] = useState(0)
 
     const [books,setBooks] = useState([])
+    const [users,setUsers] = useState([])
+
     const context = useContext(GlobalContext)
     const [token] = context.auth.token
     const [currentUser] = context.auth.currentUser
+
+    const navigate = useNavigate()
 
     const readValue = (e) => {
         const { name, value } = e.target;
@@ -43,7 +48,7 @@ function NewRent() {
             console.log('selected book =', book)
             let totalAmount = days * book.rentCost
                 console.log('totalAmount =', totalAmount)
-            setRent({...rent, ["amount"]: totalAmount })
+                setAmount(totalAmount)
         }
 
         setRent({...rent , [name]: value })
@@ -60,18 +65,54 @@ function NewRent() {
         getBooks()
     },[])
 
+    const readUsers =  useCallback(() => {
+        let getUsers = async () => {
+            const res = await axios.get(`/api/auth/all/users`, {
+                headers: { Authorization: token }
+            })
+            setUsers(res.data.users)
+        }
+
+        getUsers()
+    },[])
+
     useEffect(() => {
         readBooks()
+        readUsers()
     },[])
+
+    // update book info
+    const updateBookInfo = async (id) => {
+        let book = books.find(item => item._id === id)
+            if(book.numberOfCopy === 0) {
+                toast.warning(`No more copies are available for rent`)
+            } else {
+                book.numberOfCopy = book.numberOfCopy - 1;
+                book.rentedCopies = book.rentedCopies + 1;
+
+                await axios.patch(`/api/book/update/${id}`, book, {
+                    headers: {
+                        Authorization: token
+                    }
+                })
+            }
+    }
 
     const submitHandler = async (e) => {
         e.preventDefault();
         try {
             let newRent = {
                 ...rent,
-                userId: currentUser._id, 
+                amount
             }
             console.log('newRet =', newRent)
+            updateBookInfo(rent.bookId)
+            await axios.post(`/api/rent/create`, newRent, {
+                headers: { Authorization: token }
+            }).then(res => {
+                toast.success('New Book rented successfully')
+                navigate(`/admin/rented/list`)
+            }).catch(err => toast.error(err.response.data.msg))
         } catch (err) {
             toast.error(err.msg)
         }
@@ -104,16 +145,42 @@ function NewRent() {
                                     }
                                 </select>
                             </div>
+                                
+                            <div className="form-group mt-2">
+                                <label htmlFor="userId">UserId</label>
+                                <select name="userId" id="userId" className="form-select" value={rent.userId} onChange={readValue} >
+                                    <option value="">Choose User</option>
+                                    {
+                                        users && users.map((item,index) => {
+                                            const { _id, name } = item
+                                            return (
+                                                <option value={_id} key={index}>
+                                                    { name }
+                                                </option>
+                                            )
+                                        })
+                                    }
+                                </select>
+                            </div>
+
                             <div className="form-group mt-2">
                                 <label htmlFor="amount">Amount</label>
-                                <input type="number" name="amount" value={rent.amount} onChange={readValue} id="amount" className="form-control" required />
+                                <input type="number" name="amount" value={amount} onChange={(e) => setAmount(e.target.value)} id="amount" className="form-control" required />
                             </div>
                             <div className="form-group mt-2">
                                 <label htmlFor="returnDate">Return Date</label>
-                                <input type="datetime-local" name="returnDate" value={rent.returnDate} onChange={readValue} id="returnDate" className="form-control" />
+                                <input type="datetime-local" name="returnDate" value={rent.returnDate} onChange={readValue} id="returnDate" className="form-control" required />
                             </div>
-                            <div className="form-group mt-2"></div>
-                            <div className="form-group mt-2"></div>
+                            <div className="form-group mt-2">
+                                <label htmlFor="paymentStatus">PaymentStatus</label>
+                                <select name="paymentStatus" id="paymentStatus" className="form-select" value={rent.paymentStatus} onChange={readValue} required>
+                                    <option value="unpaid">Un-Paid</option>
+                                    <option value="paid">Paid</option>
+                                </select>
+                            </div>
+                            <div className="form-group mt-2">
+                                <input type="submit" value="Rent Book" className="btn btn-outline-success" />
+                            </div>
                         </form>
                     </div>
                 </div>

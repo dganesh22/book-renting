@@ -38,6 +38,11 @@ const rentController = {
                         if(!user)
                             return res.status(404).json({ msg: `User details not found`})
 
+                    // update the number of copy and rented copies
+                    if(book.numberOfCopy === 0) {
+                            return res.status(400).json({ msg: "No More copies available for rent."})
+                    } 
+
                     let newRent = {
                             ...req.body,
                             book,
